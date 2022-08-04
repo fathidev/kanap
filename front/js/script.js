@@ -57,7 +57,7 @@ function appendArticleToAnchor (anchor,article) {
     }
 }
 
-// ajout des éléments dans l'article avec uen boucle for each
+// ajout des éléments dans l'article avec une  boucle for each
 function appendElementToArticle(article, array){
     array.forEach((element) => {
         article.appendChild(element)      
