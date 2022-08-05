@@ -113,8 +113,8 @@ function saveOrder(color, quantity) {
     color: color,
     // conversion de quantité de string à number pour les calculs à suivre
     quantity: Number(quantity),
-    // prix récupéré depuis la variable globale
-    price: canapePrice,
+    // // prix récupéré depuis la variable globale
+    // price: canapePrice,
     // alTxt récupéré depuis la variable globale
     altTxt: altTxtForStorage,
     // imageUrl récupéré depuis la variable globale

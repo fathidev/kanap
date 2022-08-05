@@ -1,10 +1,12 @@
 // création d'un array cart qui va contenir les objets du localStorage
 const cart = [];
+// boucle qui va récupérer chaque item dans le localStorage et populer le cart
+await getItemsFromLocalToCart();
 // recupération des items du catalogue
-const items = await getItems();
+const items = await getItemsFromApi();
 //  ******************************************
 //  pour récupérer les datas Kanap depuis l'API
-async function getItems() {
+async function getItemsFromApi() {
   return fetch(`http://localhost:3000/api/products/`).then((res) => res.json());
 }
 // ******************************************
@@ -13,10 +15,7 @@ const orderButton = document.querySelector("#order");
 //  mise sur écoute du bouton commander
 orderButton.addEventListener("click", (e) => submitForm(e));
 
-// boucle qui va récupérer chaque item dans le localStorage et populer le cart
-recupItemsCart();
-
-function recupItemsCart() {
+async function getItemsFromLocalToCart() {
   // mettre tous les objets du local storage dans un tableau cart []
   const numberOfItems = localStorage.length;
   for (let i = 0; i < numberOfItems; i++) {
@@ -38,14 +37,6 @@ async function displayItem(item) {
   const unitPrice = getUnitPrice(item.id);
   const unitQuantity = getUnitQuantity(item.id);
 
-  console.log({
-    imageUrl,
-    altTxt,
-    nameProduct,
-    colorProduct,
-    unitPrice,
-    unitQuantity,
-  });
   const article = makeArticle(
     item,
     imageUrl,
@@ -56,19 +47,51 @@ async function displayItem(item) {
     unitQuantity
   );
 
-  // const cardItemContent = makeCartContent(item);
-  // article.appendChild(cardItemContent);
   displayArticle(article);
-  updateQuantity(unitQuantity);
+  calcTotalArticle();
+  calcTotalPrice();
 }
 
-function updateTotal(unitQuantity) {
-  let total = 0;
-  const totalQuantity = document.querySelector("#totalQuantity");
-  cart.forEach((item) => {
-    total += unitQuantity;
-  });
-  totalQuantity.textContent = total;
+function displayArticle(article) {
+  document.querySelector("#cart__items").appendChild(article);
+}
+// fabrication de l'article
+function makeArticle(
+  item,
+  imageUrl,
+  altTxt,
+  nameProduct,
+  colorProduct,
+  unitPrice,
+  unitQuantity
+) {
+  const article = document.createElement("article");
+  article.classList.add("cart__item");
+  article.dataset.id = item.id;
+  article.dataset.colorProduct = item.color;
+
+  article.innerHTML = `
+  <div class="cart__item__img">
+    <img src="${imageUrl}" alt="${altTxt}">
+  </div>
+  <div class="cart__item__content">
+    <div class="cart__item__content__description">
+      <h2>${nameProduct}</h2>
+      <p>${colorProduct}</p>
+      <p>${unitPrice} €</p>
+    </div>
+    <div class="cart__item__content__settings">
+      <div class="cart__item__content__settings__quantity">
+        <p>Qté : </p>
+        <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${unitQuantity}">
+      </div>
+      <div class="cart__item__content__settings__delete">
+        <p class="deleteItem">Supprimer</p>
+      </div>
+    </div>
+  </div>
+`;
+  return article;
 }
 
 function getImgUrl(id) {
@@ -97,16 +120,39 @@ function getNameProduct(id) {
   return item.name;
 }
 
-// ***************************************************
-function makeSettings(item) {
-  const settings = document.createElement("div");
-  settings.classList.add("cart__item__content__settings");
-
-  addQuantityToSettings(settings, item);
-  addDeleteToSettings(settings, item);
-
-  return settings;
+// calcul du nombre d'articles dans le panier
+function calcTotalArticle() {
+  let total = 0;
+  cart.forEach((item) => {
+    total += item.quantity;
+  });
+  displayTotalArticle(total);
 }
+
+// affichage du nombre d'articles dans le panier
+function displayTotalArticle(total) {
+  const totalQuantity = document.querySelector("#totalQuantity");
+  totalQuantity.textContent = total;
+}
+
+// calcul prix total du panier
+function calcTotalPrice() {
+  let total = 0,
+    idToSearch = "";
+  cart.forEach((item) => {
+    idToSearch = item.id;
+    let priceUnit = getUnitPrice(idToSearch);
+    total += item.quantity * priceUnit;
+  });
+  displayTotalPrice(total);
+}
+// affichage du prix total du panier
+function displayTotalPrice(total) {
+  const totalPrice = document.querySelector("#totalPrice");
+  totalPrice.textContent = total;
+}
+
+// ***************************************************
 
 function addDeleteToSettings(settings, item) {
   const div = document.createElement("div");
@@ -183,48 +229,6 @@ function saveDataToLocalStorage(item) {
   const dataTosave = JSON.stringify(item);
   const key = `${item.id}-${item.colorProduct}`;
   localStorage.setItem(key, dataTosave);
-}
-
-function displayArticle(article) {
-  document.querySelector("#cart__items").appendChild(article);
-}
-// fabrication de l'article
-function makeArticle(
-  item,
-  imageUrl,
-  altTxt,
-  nameProduct,
-  colorProduct,
-  unitPrice,
-  unitQuantity
-) {
-  const article = document.createElement("article");
-  article.classList.add("cart__item");
-  article.dataset.id = item.id;
-  article.dataset.colorProduct = item.color;
-
-  article.innerHTML = `
-  <div class="cart__item__img">
-    <img src="${imageUrl}" alt="${altTxt}">
-  </div>
-  <div class="cart__item__content">
-    <div class="cart__item__content__description">
-      <h2>${nameProduct}</h2>
-      <p>${colorProduct}</p>
-      <p>${unitPrice} €</p>
-    </div>
-    <div class="cart__item__content__settings">
-      <div class="cart__item__content__settings__quantity">
-        <p>Qté : </p>
-        <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${unitQuantity}">
-      </div>
-      <div class="cart__item__content__settings__delete">
-        <p class="deleteItem">Supprimer</p>
-      </div>
-    </div>
-  </div>
-`;
-  return article;
 }
 
 function submitForm(e) {
