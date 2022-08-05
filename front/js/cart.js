@@ -15,14 +15,17 @@ const orderButton = document.querySelector("#order");
 //  mise sur écoute du bouton commander
 orderButton.addEventListener("click", (e) => submitForm(e));
 
+// modification quantité écouteur sur input
+// const inputQuantity = document.querySelector(".itemQuantity");
+// inputQuantity.addEventListener("input", updatePriceAndQuantity);
+
+// mettre tous les objets du local storage dans un tableau cart []
 async function getItemsFromLocalToCart() {
-  // mettre tous les objets du local storage dans un tableau cart []
   const numberOfItems = localStorage.length;
   for (let i = 0; i < numberOfItems; i++) {
     const item = localStorage.getItem(localStorage.key(i));
-    console.log("l'objet à la position ", i, "est: ", item);
+    // console.log("l'objet à la position ", i, "est: ", item);
     const itemObject = JSON.parse(item);
-    // on pousse les objets du local storage vers le tableau cart[]
     cart.push(itemObject);
   }
 }
@@ -138,10 +141,11 @@ function displayTotalArticle(total) {
 // calcul prix total du panier
 function calcTotalPrice() {
   let total = 0,
-    idToSearch = "";
+    idToSearch = "",
+    priceUnit = 0;
   cart.forEach((item) => {
     idToSearch = item.id;
-    let priceUnit = getUnitPrice(idToSearch);
+    priceUnit = getUnitPrice(idToSearch);
     total += item.quantity * priceUnit;
   });
   displayTotalPrice(total);
@@ -151,6 +155,18 @@ function displayTotalPrice(total) {
   const totalPrice = document.querySelector("#totalPrice");
   totalPrice.textContent = total;
 }
+
+// mise en écoute des input avec les quantités
+document.querySelectorAll(".itemQuantity").forEach((quantityButton) => {
+  quantityButton.addEventListener("change", (e) => {
+    let quantity = parseInt(e.target.value);
+    let color = e.target.closest(".cart__item").dataset.color;
+    let _id = e.target.closest(".cart__item").dataset.id;
+    console.log(`Quantité : ${quantity}`);
+    console.log(`Couleur : ${color}`);
+    console.log(`ID : ${_id}`);
+  });
+});
 
 // ***************************************************
 
