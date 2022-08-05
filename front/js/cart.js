@@ -1,66 +1,103 @@
 // création d'un array cart qui va contenir les objets du localStorage
 const cart = [];
+// recupération des items du catalogue
 const items = await getItems();
-console.log(items);
-
-// boucle qui va récupérer chaque item dans le localStorage et populer le cart
-recupItemsLocalStorage();
-cart.forEach((item) => displayItem(item));
+//  ******************************************
+//  pour récupérer les datas Kanap depuis l'API
+async function getItems() {
+  return fetch(`http://localhost:3000/api/products/`).then((res) => res.json());
+}
+// ******************************************
 //  le bouton commander
 const orderButton = document.querySelector("#order");
 //  mise sur écoute du bouton commander
 orderButton.addEventListener("click", (e) => submitForm(e));
 
-function recupItemsLocalStorage() {
-  // récupération du nombre d'items stockés dans le localStorage
+// boucle qui va récupérer chaque item dans le localStorage et populer le cart
+recupItemsCart();
+
+function recupItemsCart() {
+  // mettre tous les objets du local storage dans un tableau cart []
   const numberOfItems = localStorage.length;
   for (let i = 0; i < numberOfItems; i++) {
     const item = localStorage.getItem(localStorage.key(i));
     console.log("l'objet à la position ", i, "est: ", item);
     const itemObject = JSON.parse(item);
+    // on pousse les objets du local storage vers le tableau cart[]
     cart.push(itemObject);
   }
 }
 
-function getUnitQuantity(id) {
-  const item = cart.find((element) => element.id === id);
-  return item.quantity;
-}
-function getUnitPrice(id) {
-  const item = items.find((element) => element._id === id);
-  return item.price;
-}
+cart.forEach((item) => displayItem(item));
+
 async function displayItem(item) {
+  const imageUrl = getImgUrl(item.id);
+  const altTxt = getAltTxt(item.id);
+  const nameProduct = getNameProduct(item.id);
+  const colorProduct = getColorProduct(item.id);
   const unitPrice = getUnitPrice(item.id);
   const unitQuantity = getUnitQuantity(item.id);
-  console.log({ unitPrice, unitQuantity });
-  const article = makeArticle(item, unitPrice, unitQuantity);
-  const imageDiv = makeImageForDiv(item);
-  article.appendChild(imageDiv);
 
-  const cardItemContent = makeCartContent(item);
-  article.appendChild(cardItemContent);
+  console.log({
+    imageUrl,
+    altTxt,
+    nameProduct,
+    colorProduct,
+    unitPrice,
+    unitQuantity,
+  });
+  const article = makeArticle(
+    item,
+    imageUrl,
+    altTxt,
+    nameProduct,
+    colorProduct,
+    unitPrice,
+    unitQuantity
+  );
+
+  // const cardItemContent = makeCartContent(item);
+  // article.appendChild(cardItemContent);
   displayArticle(article);
-  updateTotal();
+  updateQuantity(unitQuantity);
 }
 
-function updateTotal(quantity) {
+function updateTotal(unitQuantity) {
   let total = 0;
   const totalQuantity = document.querySelector("#totalQuantity");
   cart.forEach((item) => {
-    total += item.quantity;
+    total += unitQuantity;
   });
   totalQuantity.textContent = total;
 }
 
-//  ******************************************
-//  pour récupérer les canapés
-function getItems() {
-  return fetch(`http://localhost:3000/api/products/`).then((res) => res.json());
+function getImgUrl(id) {
+  const item = cart.find((element) => element.id === id);
+  return item.imageUrl;
+}
+function getAltTxt(id) {
+  const item = cart.find((element) => element.id === id);
+  return item.altTxt;
+}
+function getUnitQuantity(id) {
+  const item = cart.find((element) => element.id === id);
+  return item.quantity;
+}
+function getColorProduct(id) {
+  const item = cart.find((element) => element.id === id);
+  return item.color;
+}
+function getUnitPrice(id) {
+  // recup prix depuis les infos renvoyées par l'API
+  const item = items.find((element) => element._id === id);
+  return item.price;
+}
+function getNameProduct(id) {
+  const item = cart.find((element) => element.id === id);
+  return item.name;
 }
 
-// ******************************************
-
+// ***************************************************
 function makeSettings(item) {
   const settings = document.createElement("div");
   settings.classList.add("cart__item__content__settings");
@@ -85,7 +122,8 @@ function addDeleteToSettings(settings, item) {
 function deleteItem(item) {
   // partie local storage
   const itemToDelete = cart.findIndex(
-    (product) => product.id === item.id && product.color === item.color
+    (product) =>
+      product.id === item.id && product.colorProduct === item.colorProduct
   );
   console.log(itemToDelete);
   //  démarre à l'index de l'objet à supprimer et 1 pour le nombre d'objet à supprimer
@@ -100,7 +138,7 @@ function deleteItem(item) {
 
 function deleteArticleFromPage(item) {
   const articleToDelete = document.querySelector(
-    `article[data-id="${item.id}"][data-color="${item.color}"]`
+    `article[data-id="${item.id}"][data-colorProduct="${item.colorProduct}"]`
   );
   console.log("deleting  article", articleToDelete);
   articleToDelete.remove();
@@ -137,33 +175,42 @@ function updatePriceAndQuantity(id, newValue, item) {
 }
 
 function deleteDataFromCache(item) {
-  const key = `${item.id}-${item.color}`;
+  const key = `${item.id}-${item.colorProduct}`;
   localStorage.removeItem(key);
 }
 
 function saveDataToLocalStorage(item) {
   const dataTosave = JSON.stringify(item);
-  const key = `${item.id}-${item.color}`;
+  const key = `${item.id}-${item.colorProduct}`;
   localStorage.setItem(key, dataTosave);
 }
 
 function displayArticle(article) {
   document.querySelector("#cart__items").appendChild(article);
 }
-
-function makeArticle(item, unitPrice, unitQuantity) {
+// fabrication de l'article
+function makeArticle(
+  item,
+  imageUrl,
+  altTxt,
+  nameProduct,
+  colorProduct,
+  unitPrice,
+  unitQuantity
+) {
   const article = document.createElement("article");
   article.classList.add("cart__item");
   article.dataset.id = item.id;
-  article.dataset.color = item.color;
+  article.dataset.colorProduct = item.color;
+
   article.innerHTML = `
   <div class="cart__item__img">
-    <img src="../images/product01.jpg" alt="Photographie d'un canapé">
+    <img src="${imageUrl}" alt="${altTxt}">
   </div>
   <div class="cart__item__content">
     <div class="cart__item__content__description">
-      <h2>Nom du produit</h2>
-      <p>Vert</p>
+      <h2>${nameProduct}</h2>
+      <p>${colorProduct}</p>
       <p>${unitPrice} €</p>
     </div>
     <div class="cart__item__content__settings">
@@ -178,16 +225,6 @@ function makeArticle(item, unitPrice, unitQuantity) {
   </div>
 `;
   return article;
-}
-
-function makeImageForDiv(item) {
-  const div = document.createElement("div");
-  div.classList.add("cart__item__img");
-  const image = document.createElement("img");
-  image.src = item.imageUrl;
-  image.alt = item.altTxt;
-  div.appendChild(image);
-  return div;
 }
 
 function submitForm(e) {
