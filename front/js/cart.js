@@ -15,9 +15,16 @@ const orderButton = document.querySelector("#order");
 //  mise sur écoute du bouton commander
 orderButton.addEventListener("click", (e) => submitForm(e));
 
-// modification quantité écouteur sur input
-// const inputQuantity = document.querySelector(".itemQuantity");
-// inputQuantity.addEventListener("input", updatePriceAndQuantity);
+document.querySelectorAll(".itemQuantity").forEach((quantityButton) => {
+  quantityButton.addEventListener("change", (e) => {
+    let quantity = parseInt(e.target.value);
+    let color = e.target.closest(".cart__item").dataset.color;
+    let _id = e.target.closest(".cart__item").dataset.id;
+    console.log(`Quantité : ${quantity}`);
+    console.log(`Couleur : ${color}`);
+    console.log(`ID : ${_id}`);
+  });
+});
 
 // mettre tous les objets du local storage dans un tableau cart []
 async function getItemsFromLocalToCart() {
@@ -71,7 +78,7 @@ function makeArticle(
   const article = document.createElement("article");
   article.classList.add("cart__item");
   article.dataset.id = item.id;
-  article.dataset.colorProduct = item.color;
+  article.dataset.color = item.color;
 
   article.innerHTML = `
   <div class="cart__item__img">
