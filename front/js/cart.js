@@ -172,86 +172,68 @@ document.querySelectorAll(".itemQuantity").forEach((quantityButton) => {
     console.log(`Quantité : ${quantity}`);
     console.log(`Couleur : ${color}`);
     console.log(`ID : ${_id}`);
+    updateInputQuantity(quantity, color, _id);
+  });
+});
+//  mise à jour cart
+function updateInputQuantity(newQuantity, color, _id) {
+  const itemToUpdate = cart.find(
+    (item) => (item.id === _id) & (item.color === color)
+  );
+  console.log(itemToUpdate, newQuantity, color);
+  itemToUpdate.quantity = Number(newQuantity);
+  console.log(cart);
+  calcTotalArticle();
+  calcTotalPrice();
+  updateDataToLocalStorage(itemToUpdate);
+}
+//  mise à jour de du produit dans le localstorage
+function updateDataToLocalStorage(itemToUpdate) {
+  const dataTosave = JSON.stringify(itemToUpdate);
+  const key = `${itemToUpdate.id}-${itemToUpdate.color}`;
+  localStorage.setItem(key, dataTosave);
+}
+
+// ***************************************************
+// mise en écoute des input avec les quantités
+document.querySelectorAll(".deleteItem").forEach((suppressionButton) => {
+  suppressionButton.addEventListener("click", (e) => {
+    let color = e.target.closest(".cart__item").dataset.color;
+    let _id = e.target.closest(".cart__item").dataset.id;
+    console.log(`Couleur : ${color}`);
+    console.log(`ID : ${_id}`);
+    deleteItem(color, _id);
   });
 });
 
-// ***************************************************
-
-function addDeleteToSettings(settings, item) {
-  const div = document.createElement("div");
-  div.classList.add("cart__item__content__settings__delete");
-  div.addEventListener("click", () => deleteItem(item));
-
-  const p = document.createElement("p");
-  p.textContent = "Supprimer";
-  div.appendChild(p);
-  settings.appendChild(div);
-}
-
-function deleteItem(item) {
-  // partie local storage
+function deleteItem(color, _id) {
+  // suppression du cart
   const itemToDelete = cart.findIndex(
-    (product) =>
-      product.id === item.id && product.colorProduct === item.colorProduct
+    (product) => product.id === _id && product.colorProduct === color
   );
   console.log(itemToDelete);
   //  démarre à l'index de l'objet à supprimer et 1 pour le nombre d'objet à supprimer
   cart.splice(itemToDelete, 1);
+
   console.log(cart);
-
-  displayItemPrice();
-  updateTotal();
-  deleteDataFromCache(item);
-  deleteArticleFromPage(item);
+  // suppression du local storage
+  deleteDataFromCache(color, _id);
+  deleteArticleFromPage(color, _id);
+  calcTotalArticle();
+  calcTotalPrice();
 }
 
-function deleteArticleFromPage(item) {
-  const articleToDelete = document.querySelector(
-    `article[data-id="${item.id}"][data-colorProduct="${item.colorProduct}"]`
-  );
-  console.log("deleting  article", articleToDelete);
-  articleToDelete.remove();
-}
-
-function addQuantityToSettings(settings, item) {
-  const quantity = document.createElement("div");
-  quantity.classList.add("cart__item__content__settings__quantity");
-  const p = document.createElement("p");
-  p.textContent = "Qté : ";
-  quantity.appendChild(p);
-  const input = document.createElement("input");
-  input.type = "number";
-  input.classList.add("itemQuantity");
-  input.name = "itemQuantity";
-  input.min = "1";
-  input.max = "100";
-  input.value = item.quantity;
-  input.addEventListener("input", () =>
-    updatePriceAndQuantity(item.id, input.value, item)
-  );
-
-  quantity.appendChild(input);
-  settings.appendChild(quantity);
-}
-
-function updatePriceAndQuantity(id, newValue, item) {
-  const itemToUpdate = cart.find((item) => item.id === id);
-  itemToUpdate.quantity = Number(newValue);
-  item.quantity = itemToUpdate.quantity;
-  updateTotal();
-  displayItemPrice();
-  saveDataToLocalStorage(item);
-}
-
-function deleteDataFromCache(item) {
-  const key = `${item.id}-${item.colorProduct}`;
+function deleteDataFromCache(color, _id) {
+  const key = `${_id}-${color}`;
   localStorage.removeItem(key);
 }
 
-function saveDataToLocalStorage(item) {
-  const dataTosave = JSON.stringify(item);
-  const key = `${item.id}-${item.colorProduct}`;
-  localStorage.setItem(key, dataTosave);
+function deleteArticleFromPage(color, _id) {
+  const articleToDelete = document.querySelector(
+    `article[data-id="${_id}"][data-color="${color}"]`
+  );
+  console.log("deleting  article : ", articleToDelete);
+  articleToDelete.remove();
 }
 
 function submitForm(e) {
