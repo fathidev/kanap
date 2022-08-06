@@ -39,6 +39,7 @@ function recupDatas(canape) {
   // génération des options de couleurs
   makeColors(colors);
 }
+
 // fabrication de l'image du produit
 function makeImage(imageUrl, altTxt) {
   const image = document.createElement("img");
@@ -85,29 +86,46 @@ function makeColors(colors) {
 }
 // écouteur sur le bouton ajouter au panier
 const button = document.querySelector("#addToCart");
-button.addEventListener("click", onClickRecup);
+button.addEventListener("click", addProduct);
 
-function onClickRecup() {
+function addProduct() {
   // récupère la couleur et la quantité
   const color = document.querySelector("#colors").value;
   const quantity = document.querySelector("#quantity").value;
   // si la function renvoie true parce que le panier est invalid on sort
-  if (isOrderInvalid(color, quantity))
+  if (!isColorAndQuantityValid(color, quantity))
     return alert("Merci de sélectionner une couleur et une quantité");
   //  sinon on passe à la fonction saveCart la couleur et la quantité sélectionnée
-  saveOrder(color, quantity);
+  const key = `${getProductId()}-${color}`;
+  const quantityUpdated = isProductInCache(key)
+    ? getNewQuantity(color, quantity, key)
+    : quantity;
+
+  addProductToLocalStorage(color, quantityUpdated, key);
+
   // tout se passe bien on redirige le client vers la page récap du panier
   redirectionToCart();
 }
 
 //  function pour vérifier si la commande est invalide
-function isOrderInvalid(color, quantity) {
-  return color == "" || quantity == "0";
+function isColorAndQuantityValid(color, quantity) {
+  console.log({ color, quantity });
+  return color != "" && quantity != "0";
+}
+function getProductId() {
+  return id;
 }
 
-function saveOrder(color, quantity) {
+function getNewQuantity(color, quantity, key) {
+  const existingProduct = localStorage.getItem(key);
+  const product = JSON.parse(existingProduct);
+  const oldQuantity = product.quantity;
+  const newQuantity = Number(oldQuantity) + Number(quantity);
+  return newQuantity;
+}
+
+function addProductToLocalStorage(color, quantity, key) {
   // création d'un objet qui va contenir les infos de la commande
-  const key = `${id}-${color}`;
   const data = {
     id: id,
     color: color,
@@ -121,6 +139,10 @@ function saveOrder(color, quantity) {
   //  id c'est la clé de stockage et on fait un json des datas en string afin de les stocker dans le localstorage
   localStorage.setItem(key, JSON.stringify(data));
   console.log({ key, data: JSON.stringify(data) });
+}
+
+function isProductInCache(key) {
+  return localStorage.getItem(key) != null;
 }
 
 // redirige le client vers la page récap du panier

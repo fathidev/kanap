@@ -4,34 +4,20 @@ const cart = [];
 await getItemsFromLocalToCart();
 // recupération des items du catalogue
 const items = await getItemsFromApi();
-//  ******************************************
 //  pour récupérer les datas Kanap depuis l'API
 async function getItemsFromApi() {
   return fetch(`http://localhost:3000/api/products/`).then((res) => res.json());
 }
-// ******************************************
 //  le bouton commander
 const orderButton = document.querySelector("#order");
 //  mise sur écoute du bouton commander
 orderButton.addEventListener("click", (e) => submitForm(e));
-
-document.querySelectorAll(".itemQuantity").forEach((quantityButton) => {
-  quantityButton.addEventListener("change", (e) => {
-    let quantity = parseInt(e.target.value);
-    let color = e.target.closest(".cart__item").dataset.color;
-    let _id = e.target.closest(".cart__item").dataset.id;
-    console.log(`Quantité : ${quantity}`);
-    console.log(`Couleur : ${color}`);
-    console.log(`ID : ${_id}`);
-  });
-});
 
 // mettre tous les objets du local storage dans un tableau cart []
 async function getItemsFromLocalToCart() {
   const numberOfItems = localStorage.length;
   for (let i = 0; i < numberOfItems; i++) {
     const item = localStorage.getItem(localStorage.key(i));
-    // console.log("l'objet à la position ", i, "est: ", item);
     const itemObject = JSON.parse(item);
     cart.push(itemObject);
   }
@@ -182,7 +168,6 @@ function updateInputQuantity(newQuantity, color, _id) {
   );
   console.log(itemToUpdate, newQuantity, color);
   itemToUpdate.quantity = Number(newQuantity);
-  console.log(cart);
   calcTotalArticle();
   calcTotalPrice();
   updateDataToLocalStorage(itemToUpdate);
@@ -195,7 +180,7 @@ function updateDataToLocalStorage(itemToUpdate) {
 }
 
 // ***************************************************
-// mise en écoute des input avec les quantités
+// mise en écoute des boutons "supprimer"
 document.querySelectorAll(".deleteItem").forEach((suppressionButton) => {
   suppressionButton.addEventListener("click", (e) => {
     let color = e.target.closest(".cart__item").dataset.color;
@@ -206,8 +191,8 @@ document.querySelectorAll(".deleteItem").forEach((suppressionButton) => {
   });
 });
 
+// suppression item du cart
 function deleteItem(color, _id) {
-  // suppression du cart
   const itemToDelete = cart.findIndex(
     (product) => product.id === _id && product.colorProduct === color
   );
@@ -222,12 +207,12 @@ function deleteItem(color, _id) {
   calcTotalArticle();
   calcTotalPrice();
 }
-
+// suppression item du localstorage
 function deleteDataFromCache(color, _id) {
   const key = `${_id}-${color}`;
   localStorage.removeItem(key);
 }
-
+// suppression de l'article de la page
 function deleteArticleFromPage(color, _id) {
   const articleToDelete = document.querySelector(
     `article[data-id="${_id}"][data-color="${color}"]`
@@ -236,7 +221,7 @@ function deleteArticleFromPage(color, _id) {
   articleToDelete.remove();
 }
 
-function submitForm(e) {
+async function submitForm(e) {
   // empêche le rafraichissement automatique de la page au clic
   e.preventDefault();
   if (isCartEmpty()) return;
@@ -254,7 +239,7 @@ function submitForm(e) {
 
   const body = makeRequestBody();
   const urlPostApi = "http://localhost:3000/api/products/order";
-  postBodyToApi(body, urlPostApi);
+  await postBodyToApi(body, urlPostApi);
 }
 
 //  verification is form fields is empty
@@ -288,28 +273,24 @@ const addressRegExp = new RegExp(
 function checkFirstName() {
   const firstNameErrorMsg = document.querySelector("#firstNameErrorMsg");
   const firstName = document.querySelector("#firstName").value;
-  if (isFirstNameValid(firstName)) {
-    firstNameErrorMsg.textContent = "";
-  } else {
-    firstName.textContent = "Merci de renseigner un nom valide";
-  }
+  firstNameErrorMsg.textContent = isFirstNameValid(firstName)
+    ? ""
+    : "Merci de renseigner un prénom valide";
   return firstName;
 }
 function isFirstNameValid(firstName) {
   return charRegExp.test(firstName);
 }
+
 // verification lastName
 function checkLastName() {
   const lastNameErrorMsg = document.querySelector("#lastNameErrorMsg");
   const lastName = document.querySelector("#lastName").value;
-  if (isLastNameValid(lastName)) {
-    lastNameErrorMsg.textContent = "";
-  } else {
-    lastNameErrorMsg.textContent = "Merci de renseigner un nom valide";
-  }
+  lastNameErrorMsg.textContent = isLastNameValid(lastName)
+    ? ""
+    : "Merci de renseigner un nom valide";
   return lastName;
 }
-
 function isLastNameValid(lastName) {
   return charRegExp.test(lastName);
 }
@@ -318,14 +299,11 @@ function isLastNameValid(lastName) {
 function checkAddress() {
   const addressErrorMsg = document.querySelector("#addressErrorMsg");
   const address = document.querySelector("#address").value;
-  if (isAdressValid(address)) {
-    addressErrorMsg.textContent = "";
-  } else {
-    addressErrorMsg.textContent = "Merci de saisir une adresse conforme";
-  }
+  addressErrorMsg.textContent = isAdressValid(address)
+    ? ""
+    : "Merci de saisir une adresse conforme";
   return address;
 }
-
 function isAdressValid(address) {
   return addressRegExp.test(address);
 }
@@ -334,11 +312,9 @@ function isAdressValid(address) {
 function checkCity() {
   const cityErrorMsg = document.querySelector("#cityErrorMsg");
   const city = document.querySelector("#city").value;
-  if (isCityValid(city)) {
-    cityErrorMsg.textContent = "";
-  } else {
-    cityErrorMsg.textContent = "Merci de saisir un nom de ville conforme";
-  }
+  cityErrorMsg.textContent = isCityValid(city)
+    ? ""
+    : "Merci de saisir un nom de ville conforme";
   return city;
 }
 function isCityValid(city) {
@@ -349,16 +325,15 @@ function isCityValid(city) {
 function checkEmail() {
   const emailErrorMsg = document.querySelector("#emailErrorMsg");
   const email = document.querySelector("#email").value;
-  if (isEmailValid(email)) {
-    emailErrorMsg.textContent = "";
-  } else {
-    emailErrorMsg.textContent = "Merci de saisir un email conforme";
-  }
+  emailErrorMsg.textContent = isEmailValid(email)
+    ? ""
+    : "Merci de saisir un email conforme";
   return email;
 }
 function isEmailValid(email) {
   return regexEmail.test(email);
 }
+
 // make body for send to api
 function makeRequestBody() {
   const form = document.querySelector(".cart__order__form");
@@ -394,7 +369,7 @@ function getIdsFromcache() {
 }
 
 // send body to api
-function postBodyToApi(body, urlPostApi) {
+async function postBodyToApi(body, urlPostApi) {
   fetch(urlPostApi, {
     method: "POST",
     body: JSON.stringify(body),
