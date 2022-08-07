@@ -158,11 +158,11 @@ document.querySelectorAll(".itemQuantity").forEach((quantityButton) => {
     console.log(`Quantité : ${quantity}`);
     console.log(`Couleur : ${color}`);
     console.log(`ID : ${_id}`);
-    updateInputQuantity(quantity, color, _id);
+    updateItemsQuantity(quantity, color, _id);
   });
 });
-//  mise à jour cart
-function updateInputQuantity(newQuantity, color, _id) {
+//  mise à jour de la quantité de l'Item
+function updateItemsQuantity(newQuantity, color, _id) {
   const itemToUpdate = cart.find(
     (item) => (item.id === _id) & (item.color === color)
   );
@@ -172,7 +172,7 @@ function updateInputQuantity(newQuantity, color, _id) {
   calcTotalPrice();
   updateDataToLocalStorage(itemToUpdate);
 }
-//  mise à jour de du produit dans le localstorage
+//  mise à jour du produit dans le localstorage
 function updateDataToLocalStorage(itemToUpdate) {
   const dataTosave = JSON.stringify(itemToUpdate);
   const key = `${itemToUpdate.id}-${itemToUpdate.color}`;
@@ -187,25 +187,34 @@ document.querySelectorAll(".deleteItem").forEach((suppressionButton) => {
     let _id = e.target.closest(".cart__item").dataset.id;
     console.log(`Couleur : ${color}`);
     console.log(`ID : ${_id}`);
-    deleteItem(color, _id);
+    getItemToDelete(color, _id);
   });
 });
 
-// suppression item du cart
-function deleteItem(color, _id) {
+// recupération dans le cart de l'item à supprimer
+function getItemToDelete(color, _id) {
   const itemToDelete = cart.findIndex(
     (product) => product.id === _id && product.colorProduct === color
   );
   console.log(itemToDelete);
-  //  démarre à l'index de l'objet à supprimer et 1 pour le nombre d'objet à supprimer
-  cart.splice(itemToDelete, 1);
-
   console.log(cart);
+  confirmationDeleteItem(itemToDelete, color, _id);
+}
+
+function confirmationDeleteItem(itemToDelete, color, _id) {
   // suppression du local storage
-  deleteDataFromCache(color, _id);
-  deleteArticleFromPage(color, _id);
-  calcTotalArticle();
-  calcTotalPrice();
+  if (
+    confirm("êtes-vous certain de vouloir supprimer cet article du panier?")
+  ) {
+    //  démarre à l'index de l'objet à supprimer et 1 pour le nombre d'objet à supprimer
+    cart.splice(itemToDelete, 1);
+    deleteDataFromCache(color, _id);
+    deleteArticleFromPage(color, _id);
+    calcTotalArticle();
+    calcTotalPrice();
+  } else {
+    alert("annuler");
+  }
 }
 // suppression item du localstorage
 function deleteDataFromCache(color, _id) {
@@ -385,7 +394,7 @@ async function postBodyToApi(body, urlPostApi) {
     .catch((error) => console.error(error));
 }
 
-// redirection to confirmation page
+// redirection to confirmation.html
 function redirectionConfirmationPage(orderId) {
   window.location.href = "confirmation.html" + "?orderId=" + orderId;
 }

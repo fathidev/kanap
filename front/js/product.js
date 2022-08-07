@@ -11,9 +11,9 @@ let imgUrlForStorage, altTxtForStorage, articleName;
 // requète à l'api en ciblant le produit à l'aide de l'ID
 fetch(`http://localhost:3000/api/products/${id}`)
   .then((res) => res.json())
-  .then((res) => recupDatas(res));
+  .then((res) => getDatas(res));
 
-function recupDatas(canape) {
+function getDatas(canape) {
   // on récupère les données
   const altTxt = canape.altTxt;
   const colors = canape.colors;
@@ -92,13 +92,13 @@ function addProduct() {
   // récupère la couleur et la quantité
   const color = document.querySelector("#colors").value;
   const quantity = document.querySelector("#quantity").value;
-  // si la function renvoie true parce que le panier est invalid on sort
+
   if (!isColorAndQuantityValid(color, quantity))
     return alert("Merci de sélectionner une couleur et une quantité");
-  //  sinon on passe à la fonction saveCart la couleur et la quantité sélectionnée
+
   const key = `${getProductId()}-${color}`;
   const quantityUpdated = isProductInCache(key)
-    ? getNewQuantity(color, quantity, key)
+    ? getNewQuantity(quantity, key)
     : quantity;
 
   addProductToLocalStorage(color, quantityUpdated, key);
@@ -107,16 +107,19 @@ function addProduct() {
   redirectionToCart();
 }
 
-//  function pour vérifier si la commande est invalide
-function isColorAndQuantityValid(color, quantity) {
-  console.log({ color, quantity });
-  return color != "" && quantity != "0";
+function isProductInCache(key) {
+  return localStorage.getItem(key) != null;
 }
 function getProductId() {
   return id;
 }
 
-function getNewQuantity(color, quantity, key) {
+//  function pour vérifier si la commande est invalide
+function isColorAndQuantityValid(color, quantity) {
+  return color != "" && quantity != "0";
+}
+
+function getNewQuantity(quantity, key) {
   const existingProduct = localStorage.getItem(key);
   const product = JSON.parse(existingProduct);
   const oldQuantity = product.quantity;
@@ -127,7 +130,8 @@ function getNewQuantity(color, quantity, key) {
 function addProductToLocalStorage(color, quantity, key) {
   // création d'un objet qui va contenir les infos de la commande
   const data = {
-    id: id,
+    // id: id,
+    id: getProductId(),
     color: color,
     // conversion de quantité de string à number pour les calculs à suivre
     quantity: Number(quantity),
@@ -139,10 +143,6 @@ function addProductToLocalStorage(color, quantity, key) {
   //  id c'est la clé de stockage et on fait un json des datas en string afin de les stocker dans le localstorage
   localStorage.setItem(key, JSON.stringify(data));
   console.log({ key, data: JSON.stringify(data) });
-}
-
-function isProductInCache(key) {
-  return localStorage.getItem(key) != null;
 }
 
 // redirige le client vers la page récap du panier

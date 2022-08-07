@@ -1,12 +1,16 @@
 // fonction qui va aller chercher les données de l'api fournie
-fetch("http://localhost:3000/api/products")
-  .then((res) => res.json())
-  .then((datas) => {
-    console.log(datas);
-    return addProducts(datas);
-  });
+getDatasFromApi();
 
-function addProducts(datas) {
+async function getDatasFromApi() {
+  fetch("http://localhost:3000/api/products")
+    .then((res) => res.json())
+    .then((datas) => {
+      console.log(datas);
+      return addProducts(datas);
+    });
+}
+
+async function addProducts(datas) {
   // boucle for sur l'ensemble des datas
   for (let i = 0; i < datas.length; i++) {
     // on récupère les donnnées de l'api
@@ -15,22 +19,29 @@ function addProducts(datas) {
     const altTxt = datas[i].altTxt;
     const name = datas[i].name;
     const description = datas[i].description;
-    // fabrication de l'URL du anchor qui amène vers la page produit
+    console.log(datas);
+
     const anchor = makeAnchor(_id);
-    // appel à la fonction pour fabriquer un article vide
     const article = makeArticle();
-    // fabrication de l'image avec son URL et son texte alternatif
     const image = makeImage(imageUrl, altTxt);
-    // fabrication de la balise H3 contenant le nom du canapé
     const h3 = makeH3(name);
-    // fabrication de la balise P contenant la description du produit
     const p = makeParagraph(description);
-    // ajout de l'article dans le anchor
+
     appendArticleToAnchor(anchor, article);
-    // ajout des éléments dans l'article avec un tableau d'éléments en argument
     appendElementToArticle(article, [image, h3, p]);
   }
 }
+
+// function makeCard(_id, imageUrl, altTxt, name, description) {
+//   const card = `
+//   <article>
+//     <img src="${imageUrl}" alt="${altTxt}">
+//     <h3 class="productName">${name}</h3>
+//     <p class="productDescription">${description}</p>
+//   </article>
+//   `;
+//   return card;
+// }
 
 // fabrication d'un article vide
 function makeArticle() {
@@ -46,9 +57,9 @@ function makeAnchor(_id) {
 
 // ajout de l'article dans le anchor
 function appendArticleToAnchor(anchor, article) {
-  // récupération de la section items avec son ID
+  // récupération de la section #items
   const items = document.querySelector("#items");
-  // vérification de la présence de la section items
+  // vérification de la présence de la section #items
   if (items != null) {
     // ajout du anchor dans la section #items
     items.appendChild(anchor);
