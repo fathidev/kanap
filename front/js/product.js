@@ -107,7 +107,7 @@ function addProduct() {
 function confirmationAddItemToCart(color, quantityUpdated, key) {
   if (
     confirm(
-      `Souhaitez-vous ajouter au panier le produit : ${articleName} - ${color} en ${quantityUpdated} exemplaire(s) ? `
+      `En confirmant cette action, vous aurez dans le panier ce produit : ${articleName} - ${color} en ${quantityUpdated} exemplaire(s) ? `
     )
   ) {
     makeDataForLocalStorage(color, quantityUpdated, key);

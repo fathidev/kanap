@@ -13,6 +13,8 @@ const orderButton = document.querySelector("#order");
 //  mise sur écoute du bouton commander
 orderButton.addEventListener("click", (e) => submitForm(e));
 
+// mise en écoute des input avec les quantités
+
 // mettre tous les objets du local storage dans un tableau cart []
 async function getItemsFromLocalToCart() {
   const numberOfItems = localStorage.length;
@@ -45,7 +47,7 @@ async function displayItem(item) {
 
   displayArticle(article);
   calcTotalArticle();
-  calcTotalPrice();
+  calcTotalPrice(item);
 }
 
 function displayArticle(article) {
@@ -85,8 +87,7 @@ function makeArticle(
         <p class="deleteItem">Supprimer</p>
       </div>
     </div>
-  </div>
-`;
+  </div>`;
   return article;
 }
 
@@ -124,13 +125,11 @@ function calcTotalArticle() {
   });
   displayTotalArticle(total);
 }
-
 // affichage du nombre d'articles dans le panier
 function displayTotalArticle(total) {
   const totalQuantity = document.querySelector("#totalQuantity");
   totalQuantity.textContent = total;
 }
-
 // calcul prix total du panier
 function calcTotalPrice() {
   let total = 0,
@@ -149,18 +148,6 @@ function displayTotalPrice(total) {
   totalPrice.textContent = total;
 }
 
-// mise en écoute des input avec les quantités
-document.querySelectorAll(".itemQuantity").forEach((quantityButton) => {
-  quantityButton.addEventListener("change", (e) => {
-    let quantity = parseInt(e.target.value);
-    let color = e.target.closest(".cart__item").dataset.color;
-    let _id = e.target.closest(".cart__item").dataset.id;
-    console.log(`Quantité : ${quantity}`);
-    console.log(`Couleur : ${color}`);
-    console.log(`ID : ${_id}`);
-    updateItemsQuantity(quantity, color, _id);
-  });
-});
 //  mise à jour de la quantité de l'Item
 function updateItemsQuantity(newQuantity, color, _id) {
   const itemToUpdate = cart.find(
@@ -179,7 +166,19 @@ function updateDataToLocalStorage(itemToUpdate) {
   localStorage.setItem(key, dataTosave);
 }
 
-// ***************************************************
+// mise en écoute champ quantuty
+document.querySelectorAll(".itemQuantity").forEach((inputQuantity) => {
+  inputQuantity.addEventListener("change", (e) => {
+    let quantity = parseInt(e.target.value);
+    let color = e.target.closest(".cart__item").dataset.color;
+    let _id = e.target.closest(".cart__item").dataset.id;
+    console.log(`Quantité : ${quantity}`);
+    console.log(`Couleur : ${color}`);
+    console.log(`ID : ${_id}`);
+    updateItemsQuantity(quantity, color, _id);
+  });
+});
+
 // mise en écoute des boutons "supprimer"
 document.querySelectorAll(".deleteItem").forEach((suppressionButton) => {
   suppressionButton.addEventListener("click", (e) => {
@@ -187,27 +186,26 @@ document.querySelectorAll(".deleteItem").forEach((suppressionButton) => {
     let _id = e.target.closest(".cart__item").dataset.id;
     console.log(`Couleur : ${color}`);
     console.log(`ID : ${_id}`);
-    getItemToDelete(color, _id);
+    getIndexItemToDelete(color, _id);
   });
 });
 
 // recupération dans le cart de l'item à supprimer
-function getItemToDelete(color, _id) {
-  const itemToDelete = cart.findIndex(
+function getIndexItemToDelete(color, _id) {
+  const indexItemToDelete = cart.findIndex(
     (product) => product.id === _id && product.colorProduct === color
   );
-  console.log(itemToDelete);
-  console.log(cart);
-  confirmationDeleteItem(itemToDelete, color, _id);
+  console.log(indexItemToDelete);
+  confirmationDeleteItem(indexItemToDelete, color, _id);
 }
 
-function confirmationDeleteItem(itemToDelete, color, _id) {
+function confirmationDeleteItem(indexItemToDelete, color, _id) {
   // suppression du local storage
   if (
     confirm("Êtes-vous certain de vouloir supprimer cet article du panier?")
   ) {
     //  démarre à l'index de l'objet à supprimer et 1 pour le nombre d'objet à supprimer
-    cart.splice(itemToDelete, 1);
+    cart.splice(indexItemToDelete, 1);
     deleteDataFromCache(color, _id);
     deleteArticleFromPage(color, _id);
     calcTotalArticle();
