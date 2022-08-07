@@ -101,10 +101,18 @@ function addProduct() {
     ? getNewQuantity(quantity, key)
     : quantity;
 
-  addProductToLocalStorage(color, quantityUpdated, key);
-
-  // tout se passe bien on redirige le client vers la page récap du panier
-  redirectionToCart();
+  if (
+    confirm(
+      `Voulez-vous ajouter le produit : ${articleName} au panier en ${quantityUpdated} exemplaire(s) ? `
+    )
+  ) {
+    addProductToLocalStorage(color, quantityUpdated, key);
+    // tout se passe bien on redirige le client vers la page récap du panier
+    redirectionToCart();
+  } else {
+    alert(`Annulation d'ajout au panier de l'article : ${articleName}`);
+    window.location.href = "index.html";
+  }
 }
 
 function isProductInCache(key) {
