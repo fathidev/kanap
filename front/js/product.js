@@ -101,9 +101,13 @@ function addProduct() {
     ? getNewQuantity(quantity, key)
     : quantity;
 
+  confirmationAddItemToCart(color, quantityUpdated, key);
+}
+
+function confirmationAddItemToCart(color, quantityUpdated, key) {
   if (
     confirm(
-      `Voulez-vous ajouter le produit : ${articleName} au panier en ${quantityUpdated} exemplaire(s) ? `
+      `Voulez-vous ajouter le produit : ${articleName} - ${color} au panier en ${quantityUpdated} exemplaire(s) ? `
     )
   ) {
     addProductToLocalStorage(color, quantityUpdated, key);
