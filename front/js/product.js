@@ -107,14 +107,15 @@ function addProduct() {
 function confirmationAddItemToCart(color, quantityUpdated, key) {
   if (
     confirm(
-      `Voulez-vous ajouter le produit : ${articleName} - ${color} au panier en ${quantityUpdated} exemplaire(s) ? `
+      `Souhaitez-vous ajouter le produit : ${articleName} - ${color} au panier en ${quantityUpdated} exemplaire(s) ? `
     )
   ) {
-    addProductToLocalStorage(color, quantityUpdated, key);
+    makeDataForLocalStorage(color, quantityUpdated, key);
     // tout se passe bien on redirige le client vers la page récap du panier
-    redirectionToCart();
   } else {
-    alert(`Annulation d'ajout au panier de l'article : ${articleName}`);
+    alert(
+      `Annulation d'ajout au panier de l'article : ${articleName}, retour au catalogue`
+    );
     window.location.href = "index.html";
   }
 }
@@ -139,7 +140,7 @@ function getNewQuantity(quantity, key) {
   return newQuantity;
 }
 
-function addProductToLocalStorage(color, quantity, key) {
+function makeDataForLocalStorage(color, quantity, key) {
   // création d'un objet qui va contenir les infos de la commande
   const data = {
     // id: id,
@@ -151,6 +152,11 @@ function addProductToLocalStorage(color, quantity, key) {
     imageUrl: imgUrlForStorage,
     name: articleName,
   };
+  pushProductInLocalStorage(data, key);
+  redirectionToCart();
+}
+
+function pushProductInLocalStorage(data, key) {
   // déclaration d'un local storage
   //  id c'est la clé de stockage et on fait un json des datas en string afin de les stocker dans le localstorage
   localStorage.setItem(key, JSON.stringify(data));
