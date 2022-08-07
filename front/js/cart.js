@@ -204,7 +204,7 @@ function getItemToDelete(color, _id) {
 function confirmationDeleteItem(itemToDelete, color, _id) {
   // suppression du local storage
   if (
-    confirm("êtes-vous certain de vouloir supprimer cet article du panier?")
+    confirm("Êtes-vous certain de vouloir supprimer cet article du panier?")
   ) {
     //  démarre à l'index de l'objet à supprimer et 1 pour le nombre d'objet à supprimer
     cart.splice(itemToDelete, 1);
@@ -213,7 +213,7 @@ function confirmationDeleteItem(itemToDelete, color, _id) {
     calcTotalArticle();
     calcTotalPrice();
   } else {
-    alert("annuler");
+    alert("Annuler la suppression de cet article du panier.");
   }
 }
 // suppression item du localstorage
