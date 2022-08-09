@@ -11,11 +11,14 @@ async function getItemsFromApi() {
 changeH1();
 function changeH1() {
   let counter = verifLocalStorage();
-  let h1 = document.getElementById("h1");
+  const h1 = document.getElementById("h1");
+  const title = document.getElementById("title");
   if (counter > 0) {
     h1.innerHTML = "Votre Panier";
+    title.innerHTML = "Votre Panier";
   } else {
     h1.innerHTML = "Votre Panier est vide";
+    title.innerHTML = "Votre Panier est vide";
   }
 }
 
@@ -279,21 +282,25 @@ const charRegExp = new RegExp("^[a-zA-Z ,.'-]+$");
 const addressRegExp = new RegExp(
   "^[0-9]{1,5}(?:(?:[,. ]){1}[-a-zA-Zàâäéèêëïîôöùûüç]+)+"
 );
-console.log("local storage nombre d'items : " + localStorage.length);
+
+// verification si le panier est vide
 function isCartEmpty() {
-  console.log(localStorage.length);
   if (cart.length === 0) {
     alert(
       "Le panier est vide merci d'ajouter au moins un article. Nous vous dirigeons vers la page d'accueil"
     );
-    window.location.href = "index.html";
+    redirectionHomePage();
     return true;
   } else {
     return false;
   }
 }
+// rediriger l'utilsateur vers la page d'accueil
+function redirectionHomePage() {
+  window.location.href = "index.html";
+}
 
-// récupération de l'éleme,nt formulaire
+// récupération de l'élement formulaire
 const form = document.querySelector(".cart__order__form");
 // écouter les modications du champs prénom
 form.firstName.addEventListener("change", function () {
@@ -345,6 +352,7 @@ function validAdress(inputAdress) {
 
 // écouteur sur le champs Ville
 form.city.addEventListener("change", function () {
+  console.log("modif city");
   validCity(this);
 });
 
@@ -388,7 +396,7 @@ const validEmail = function (inputEmail) {
 //   return charRegExp.test(firstName);
 // }
 
-// make body for send to api
+// fabrication du bosy à envoyer à l'API
 function makeRequestBody() {
   const form = document.querySelector(".cart__order__form");
   const firstName = form.elements.firstName.value;
