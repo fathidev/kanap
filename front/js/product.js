@@ -100,7 +100,7 @@ function addProduct() {
   const quantityUpdated = isProductInCache(key)
     ? getNewQuantity(quantity, key)
     : quantity;
-
+    
   confirmationAddItemToCart(color, quantityUpdated, key);
 }
 

@@ -8,6 +8,16 @@ const items = await getItemsFromApi();
 async function getItemsFromApi() {
   return fetch(`http://localhost:3000/api/products/`).then((res) => res.json());
 }
+changeH1();
+function changeH1() {
+  let counter = verifLocalStorage();
+  let h1 = document.getElementById("h1");
+  if (counter > 0) {
+    h1.innerHTML = "Votre Panier";
+  } else {
+    h1.innerHTML = "Votre Panier est vide";
+  }
+}
 
 //  le bouton commander
 const orderButton = document.querySelector("#order");
@@ -123,12 +133,29 @@ function calcTotalArticle() {
     total += item.quantity;
   });
   displayTotalArticle(total);
+  console.log(total);
 }
 // affichage du nombre d'articles dans le panier
 function displayTotalArticle(total) {
   const totalQuantity = document.querySelector("#totalQuantity");
   totalQuantity.textContent = total;
 }
+
+// function changeH1() {
+//   let countLocalStorage = verifLocalStorage();
+//   console.log(countLocalStorage);
+//   let h1 = document.getElementById("#h1");
+//   if (countLocalStorage === 0) {
+//     console.log("le total : " + total);
+//     h1.innerHTML = "Votre Panier est vide";
+//   } else {
+//     h1.innerHTML = "Votre Panier est vide";
+//   }
+// }
+function verifLocalStorage() {
+  return localStorage.length;
+}
+
 // calcul prix total du panier
 function calcTotalPrice() {
   let total = 0,
@@ -157,6 +184,7 @@ function updateItemsQuantity(newQuantity, color, _id) {
   calcTotalArticle();
   calcTotalPrice();
   updateDataToLocalStorage(itemToUpdate);
+  changeH1();
 }
 //  mise à jour du produit dans le localstorage
 function updateDataToLocalStorage(itemToUpdate) {
@@ -189,7 +217,7 @@ function getIndexItemToDelete(color, _id) {
   const indexItemToDelete = cart.findIndex(
     (product) => product.id === _id && product.colorProduct === color
   );
-  console.log(indexItemToDelete);
+
   confirmationDeleteItem(indexItemToDelete, color, _id);
 }
 // boite de dialogue confirmation suppression de l'article du panier
@@ -203,6 +231,7 @@ function confirmationDeleteItem(indexItemToDelete, color, _id) {
     deleteArticleFromPage(color, _id);
     calcTotalArticle();
     calcTotalPrice();
+    changeH1();
   } else {
     alert("Annuler la suppression de cet article du panier.");
   }
@@ -227,10 +256,11 @@ function submitForm(e) {
   e.preventDefault();
   if (
     isCartEmpty() ||
-    !validEmail(form.email) ||
     !validFirstName(form.firstName) ||
     !validLastName(form.lastName) ||
-    !validAdress(form.address)
+    !validAdress(form.address) ||
+    !validEmail(form.email) ||
+    !validCity(form.city)
   ) {
     return;
   } else {
@@ -264,17 +294,15 @@ function isCartEmpty() {
 }
 
 // récupération de l'éleme,nt formulaire
-let form = document.querySelector(".cart__order__form");
+const form = document.querySelector(".cart__order__form");
 // écouter les modications du champs prénom
 form.firstName.addEventListener("change", function () {
-  console.log("modif prénom");
   validFirstName(this);
 });
 
 function validFirstName(inputFirstName) {
-  let firstNameErrorMsg = inputFirstName.nextElementSibling;
-  let testFirstName = charRegExp.test(inputFirstName.value);
-  if (testFirstName) {
+  const firstNameErrorMsg = document.querySelector("#firstNameErrorMsg");
+  if (charRegExp.test(inputFirstName.value)) {
     firstNameErrorMsg.innerHTML = "";
     return true;
   } else {
@@ -285,15 +313,12 @@ function validFirstName(inputFirstName) {
 
 // écouter le champs prénom
 form.lastName.addEventListener("change", function () {
-  console.log("modif nom");
   validLastName(this);
 });
 
 function validLastName(inputLastName) {
-  console.log(inputLastName.value);
-  let lastNameErrorMsg = inputLastName.nextElementSibling;
-  let testLastName = charRegExp.test(inputLastName.value);
-  if (testLastName) {
+  const lastNameErrorMsg = document.querySelector("#lastNameErrorMsg");
+  if (charRegExp.test(inputLastName.value)) {
     lastNameErrorMsg.innerHTML = "";
     return true;
   } else {
@@ -302,17 +327,14 @@ function validLastName(inputLastName) {
   }
 }
 
-// écouter le champs adresse
-
+// écouter le champs adress
 form.address.addEventListener("change", function () {
-  console.log("modif adress");
   validAdress(this);
 });
 
 function validAdress(inputAdress) {
-  let addressErrorMsg = inputAdress.nextElementSibling;
-  let testAdress = addressRegExp.test(inputAdress.value);
-  if (testAdress) {
+  const addressErrorMsg = document.querySelector("#addressErrorMsg");
+  if (addressRegExp.test(inputAdress.value)) {
     addressErrorMsg.innerHTML = "";
     return true;
   } else {
@@ -323,21 +345,16 @@ function validAdress(inputAdress) {
 
 // écouteur sur le champs Ville
 form.city.addEventListener("change", function () {
-  console.log("modif city");
   validCity(this);
 });
 
 const validCity = function (inputCity) {
-  console.log(inputCity.value);
-  console.log(inputCity);
-  let cityErrorMsg = inputCity.nextElementSibling;
-  let testCity = charRegExp.test(inputCity.value);
-  if (testCity) {
+  const cityErrorMsg = document.querySelector("#cityErrorMsg");
+  if (charRegExp.test(inputCity.value)) {
     cityErrorMsg.innerHTML = "";
     return true;
   } else {
     cityErrorMsg.innerHTML = "Nom de ville incorrect";
-    // inputCity.style.border = "2px solid #00FF00";
     return false;
   }
 };
@@ -349,10 +366,8 @@ form.email.addEventListener("change", function () {
 });
 
 const validEmail = function (inputEmail) {
-  console.log(inputEmail.value);
-  let emailErrorMsg = inputEmail.nextElementSibling;
-  let testEmail = regexEmail.test(inputEmail.value);
-  if (testEmail) {
+  const emailErrorMsg = document.querySelector("#emailErrorMsg");
+  if (regexEmail.test(inputEmail.value)) {
     emailErrorMsg.innerHTML = "";
     return true;
   } else {
