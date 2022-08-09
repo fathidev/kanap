@@ -107,14 +107,14 @@ function addProduct() {
 function confirmationAddItemToCart(color, quantityUpdated, key) {
   if (
     confirm(
-      `En confirmant cette action, vous aurez dans le panier ce produit : ${articleName} - ${color} en ${quantityUpdated} exemplaire(s) ? `
+      `En confirmant, votre panier comportera le ${articleName} - couleur : ${color} en (${quantityUpdated}) exemplaire(s) ? `
     )
   ) {
     makeDataForLocalStorage(color, quantityUpdated, key);
     // tout se passe bien on redirige le client vers la page récap du panier
   } else {
     alert(
-      `Annulation d'ajout au panier de l'article : ${articleName}, retour au catalogue`
+      `Annulation de l'ajout au panier de ${articleName}, nous vous dirigeons vers la page d'accueil.`
     );
     window.location.href = "index.html";
   }

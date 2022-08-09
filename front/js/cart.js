@@ -8,12 +8,11 @@ const items = await getItemsFromApi();
 async function getItemsFromApi() {
   return fetch(`http://localhost:3000/api/products/`).then((res) => res.json());
 }
+
 //  le bouton commander
 const orderButton = document.querySelector("#order");
 //  mise sur écoute du bouton commander
 orderButton.addEventListener("click", (e) => submitForm(e));
-
-// mise en écoute des input avec les quantités
 
 // mettre tous les objets du local storage dans un tableau cart []
 async function getItemsFromLocalToCart() {
@@ -25,9 +24,9 @@ async function getItemsFromLocalToCart() {
   }
 }
 
-cart.forEach((item) => displayItem(item));
+cart.forEach((item) => getInfosItem(item));
 
-async function displayItem(item) {
+async function getInfosItem(item) {
   const imageUrl = getImgUrl(item.id);
   const altTxt = getAltTxt(item.id);
   const nameProduct = getNameProduct(item.id);
@@ -165,21 +164,16 @@ function updateDataToLocalStorage(itemToUpdate) {
   const key = `${itemToUpdate.id}-${itemToUpdate.color}`;
   localStorage.setItem(key, dataTosave);
 }
-
-// mise en écoute champ quantuty
+// écouteur sur input quantité
 document.querySelectorAll(".itemQuantity").forEach((inputQuantity) => {
   inputQuantity.addEventListener("change", (e) => {
     let quantity = parseInt(e.target.value);
     let color = e.target.closest(".cart__item").dataset.color;
     let _id = e.target.closest(".cart__item").dataset.id;
-    console.log(`Quantité : ${quantity}`);
-    console.log(`Couleur : ${color}`);
-    console.log(`ID : ${_id}`);
     updateItemsQuantity(quantity, color, _id);
   });
 });
-
-// mise en écoute des boutons "supprimer"
+// écouteur sur bouton suppression
 document.querySelectorAll(".deleteItem").forEach((suppressionButton) => {
   suppressionButton.addEventListener("click", (e) => {
     let color = e.target.closest(".cart__item").dataset.color;
@@ -190,7 +184,7 @@ document.querySelectorAll(".deleteItem").forEach((suppressionButton) => {
   });
 });
 
-// recupération dans le cart de l'item à supprimer
+// recupération de l'index de l'item à supprimer
 function getIndexItemToDelete(color, _id) {
   const indexItemToDelete = cart.findIndex(
     (product) => product.id === _id && product.colorProduct === color
@@ -198,9 +192,8 @@ function getIndexItemToDelete(color, _id) {
   console.log(indexItemToDelete);
   confirmationDeleteItem(indexItemToDelete, color, _id);
 }
-
+// boite de dialogue confirmation suppression de l'article du panier
 function confirmationDeleteItem(indexItemToDelete, color, _id) {
-  // suppression du local storage
   if (
     confirm("Êtes-vous certain de vouloir supprimer cet article du panier?")
   ) {
@@ -228,118 +221,157 @@ function deleteArticleFromPage(color, _id) {
   articleToDelete.remove();
 }
 
-async function submitForm(e) {
+// envoi du for
+function submitForm(e) {
   // empêche le rafraichissement automatique de la page au clic
   e.preventDefault();
-  if (isCartEmpty()) return;
-  if (isFormInvalid()) return;
-  const firstName = checkFirstName();
-  if (!isFirstNameValid(firstName)) return;
-  const lastName = checkLastName();
-  if (!isLastNameValid(lastName)) return;
-  const address = checkAddress();
-  if (!isAdressValid(address)) return;
-  const city = checkCity();
-  if (!isCityValid(city)) return;
-  const email = checkEmail();
-  if (!isEmailValid(email)) return;
-
-  const body = makeRequestBody();
-  const urlPostApi = "http://localhost:3000/api/products/order";
-  await postBodyToApi(body, urlPostApi);
-}
-
-//  verification is form fields is empty
-function isCartEmpty() {
-  if (cart.length === 0)
-    return alert("Votre panier est vide, merci d'ajouter au moins un produit");
-}
-
-// verification if form is invalid
-function isFormInvalid() {
-  const form = document.querySelector(".cart__order__form");
-  const inputs = form.querySelectorAll("input");
-  inputs.forEach((input) => {
-    if (input.value === "") {
-      alert("Merci de remplir tous les champs du formulaire");
-      return true;
-    } else {
-      return false;
-    }
-  });
+  if (
+    isCartEmpty() ||
+    !validEmail(form.email) ||
+    !validFirstName(form.firstName) ||
+    !validLastName(form.lastName) ||
+    !validAdress(form.address)
+  ) {
+    return;
+  } else {
+    const body = makeRequestBody();
+    const urlPostApi = "http://localhost:3000/api/products/order";
+    postBodyToApi(body, urlPostApi);
+    console.log(body);
+  }
 }
 
 // patherns
-const regexEmail = new RegExp("[a-z0-9]+@[a-z]+.[a-z]{2,}");
+const regexEmail = new RegExp(
+  "^[a-zA-Z0-9.-_]+[@]{1}[a-zA-Z0-9.-_]+[.]{1}[a-z]{2,10}$"
+);
 const charRegExp = new RegExp("^[a-zA-Z ,.'-]+$");
 const addressRegExp = new RegExp(
-  "^[0-9]{1,3}(?:(?:[,. ]){1}[-a-zA-Zàâäéèêëïîôöùûüç]+)+"
+  "^[0-9]{1,5}(?:(?:[,. ]){1}[-a-zA-Zàâäéèêëïîôöùûüç]+)+"
 );
-
-//  verification firstName
-function checkFirstName() {
-  const firstNameErrorMsg = document.querySelector("#firstNameErrorMsg");
-  const firstName = document.querySelector("#firstName").value;
-  firstNameErrorMsg.textContent = isFirstNameValid(firstName)
-    ? ""
-    : "Merci de renseigner un prénom valide";
-  return firstName;
-}
-function isFirstNameValid(firstName) {
-  return charRegExp.test(firstName);
-}
-
-// verification lastName
-function checkLastName() {
-  const lastNameErrorMsg = document.querySelector("#lastNameErrorMsg");
-  const lastName = document.querySelector("#lastName").value;
-  lastNameErrorMsg.textContent = isLastNameValid(lastName)
-    ? ""
-    : "Merci de renseigner un nom valide";
-  return lastName;
-}
-function isLastNameValid(lastName) {
-  return charRegExp.test(lastName);
+console.log("local storage nombre d'items : " + localStorage.length);
+function isCartEmpty() {
+  console.log(localStorage.length);
+  if (cart.length === 0) {
+    alert(
+      "Le panier est vide merci d'ajouter au moins un article. Nous vous dirigeons vers la page d'accueil"
+    );
+    window.location.href = "index.html";
+    return true;
+  } else {
+    return false;
+  }
 }
 
-// vérification address
-function checkAddress() {
-  const addressErrorMsg = document.querySelector("#addressErrorMsg");
-  const address = document.querySelector("#address").value;
-  addressErrorMsg.textContent = isAdressValid(address)
-    ? ""
-    : "Merci de saisir une adresse conforme";
-  return address;
-}
-function isAdressValid(address) {
-  return addressRegExp.test(address);
+// récupération de l'éleme,nt formulaire
+let form = document.querySelector(".cart__order__form");
+// écouter les modications du champs prénom
+form.firstName.addEventListener("change", function () {
+  console.log("modif prénom");
+  validFirstName(this);
+});
+
+function validFirstName(inputFirstName) {
+  let firstNameErrorMsg = inputFirstName.nextElementSibling;
+  let testFirstName = charRegExp.test(inputFirstName.value);
+  if (testFirstName) {
+    firstNameErrorMsg.innerHTML = "";
+    return true;
+  } else {
+    firstNameErrorMsg.innerHTML = "Prénom incorrect";
+    return false;
+  }
 }
 
-//  verification city
-function checkCity() {
-  const cityErrorMsg = document.querySelector("#cityErrorMsg");
-  const city = document.querySelector("#city").value;
-  cityErrorMsg.textContent = isCityValid(city)
-    ? ""
-    : "Merci de saisir un nom de ville conforme";
-  return city;
-}
-function isCityValid(city) {
-  return charRegExp.test(city);
+// écouter le champs prénom
+form.lastName.addEventListener("change", function () {
+  console.log("modif nom");
+  validLastName(this);
+});
+
+function validLastName(inputLastName) {
+  console.log(inputLastName.value);
+  let lastNameErrorMsg = inputLastName.nextElementSibling;
+  let testLastName = charRegExp.test(inputLastName.value);
+  if (testLastName) {
+    lastNameErrorMsg.innerHTML = "";
+    return true;
+  } else {
+    lastNameErrorMsg.innerHTML = "Nom invalide";
+    return false;
+  }
 }
 
-//  verification email
-function checkEmail() {
-  const emailErrorMsg = document.querySelector("#emailErrorMsg");
-  const email = document.querySelector("#email").value;
-  emailErrorMsg.textContent = isEmailValid(email)
-    ? ""
-    : "Merci de saisir un email conforme";
-  return email;
+// écouter le champs adresse
+
+form.address.addEventListener("change", function () {
+  console.log("modif adress");
+  validAdress(this);
+});
+
+function validAdress(inputAdress) {
+  let addressErrorMsg = inputAdress.nextElementSibling;
+  let testAdress = addressRegExp.test(inputAdress.value);
+  if (testAdress) {
+    addressErrorMsg.innerHTML = "";
+    return true;
+  } else {
+    addressErrorMsg.innerHTML = "Adresse incorrecte";
+    return false;
+  }
 }
-function isEmailValid(email) {
-  return regexEmail.test(email);
-}
+
+// écouteur sur le champs Ville
+form.city.addEventListener("change", function () {
+  console.log("modif city");
+  validCity(this);
+});
+
+const validCity = function (inputCity) {
+  console.log(inputCity.value);
+  console.log(inputCity);
+  let cityErrorMsg = inputCity.nextElementSibling;
+  let testCity = charRegExp.test(inputCity.value);
+  if (testCity) {
+    cityErrorMsg.innerHTML = "";
+    return true;
+  } else {
+    cityErrorMsg.innerHTML = "Nom de ville incorrect";
+    // inputCity.style.border = "2px solid #00FF00";
+    return false;
+  }
+};
+
+// écouter les modications du champs email
+form.email.addEventListener("change", function () {
+  console.log("modif email");
+  validEmail(this);
+});
+
+const validEmail = function (inputEmail) {
+  console.log(inputEmail.value);
+  let emailErrorMsg = inputEmail.nextElementSibling;
+  let testEmail = regexEmail.test(inputEmail.value);
+  if (testEmail) {
+    emailErrorMsg.innerHTML = "";
+    return true;
+  } else {
+    emailErrorMsg.innerHTML = "Adresse mail invalide";
+    return false;
+  }
+};
+
+// function checkFirstName() {
+//   const firstNameErrorMsg = document.querySelector("#firstNameErrorMsg");
+//   const firstName = document.querySelector("#firstName").value;
+//   firstNameErrorMsg.textContent = isFirstNameValid(firstName)
+//     ? ""
+//     : "Merci de renseigner un prénom valide";
+//   return firstName;
+// }
+// function isFirstNameValid(firstName) {
+//   return charRegExp.test(firstName);
+// }
 
 // make body for send to api
 function makeRequestBody() {
@@ -375,7 +407,7 @@ function getIdsFromcache() {
   return products;
 }
 
-// send body to api
+// post body to api
 async function postBodyToApi(body, urlPostApi) {
   fetch(urlPostApi, {
     method: "POST",
