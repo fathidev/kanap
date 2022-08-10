@@ -1,3 +1,5 @@
+![GitHub followers](https://img.shields.io/github/followers/fathidev?style=social)
+
 # Kanap #
 
 This is the front end and back end server for Project 5 of the Web Developer path.
