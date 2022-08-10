@@ -148,18 +148,6 @@ function displayTotalArticle(total) {
   totalQuantity.textContent = total;
 }
 
-// function changeH1() {
-//   let countLocalStorage = verifLocalStorage();
-//   console.log(countLocalStorage);
-//   let h1 = document.getElementById("#h1");
-//   if (countLocalStorage === 0) {
-//     console.log("le total : " + total);
-//     h1.innerHTML = "Votre Panier est vide";
-//   } else {
-//     h1.innerHTML = "Votre Panier est vide";
-//   }
-// }
-
 // vérification si le localstorage est vide ou contient des éléments
 function verifLocalStorage() {
   return localStorage.length;
