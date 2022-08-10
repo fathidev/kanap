@@ -1,16 +1,15 @@
-// fonction qui va aller chercher les données de l'api fournie
 getDatasFromApi();
 
+// récupérer les données de l'api fournie
 async function getDatasFromApi() {
   fetch("http://localhost:3000/api/products")
     .then((res) => res.json())
     .then((datas) => {
-      console.log(datas);
-      return addProducts(datas);
+      return getInfosForElements(datas);
     });
 }
-
-async function addProducts(datas) {
+// récupération des infos pour les élements de la page
+async function getInfosForElements(datas) {
   // boucle for sur l'ensemble des datas
   for (let i = 0; i < datas.length; i++) {
     // on récupère les donnnées de l'api
@@ -19,29 +18,20 @@ async function addProducts(datas) {
     const altTxt = datas[i].altTxt;
     const name = datas[i].name;
     const description = datas[i].description;
-    console.log(datas);
-
-    const anchor = makeAnchor(_id);
-    const article = makeArticle();
-    const image = makeImage(imageUrl, altTxt);
-    const h3 = makeH3(name);
-    const p = makeParagraph(description);
-
-    appendArticleToAnchor(anchor, article);
-    appendElementToArticle(article, [image, h3, p]);
+    makeElementsOfArticle(_id, imageUrl, altTxt, name, description);
   }
 }
+// fabrication des différents éléments
+function makeElementsOfArticle(_id, imageUrl, altTxt, name, description) {
+  const anchor = makeAnchor(_id);
+  const article = makeArticle();
+  const image = makeImage(imageUrl, altTxt);
+  const h3 = makeH3(name);
+  const p = makeParagraph(description);
 
-// function makeCard(_id, imageUrl, altTxt, name, description) {
-//   const card = `
-//   <article>
-//     <img src="${imageUrl}" alt="${altTxt}">
-//     <h3 class="productName">${name}</h3>
-//     <p class="productDescription">${description}</p>
-//   </article>
-//   `;
-//   return card;
-// }
+  appendArticleToAnchor(anchor, article);
+  appendElementToArticle(article, [image, h3, p]);
+}
 
 // fabrication d'un article vide
 function makeArticle() {

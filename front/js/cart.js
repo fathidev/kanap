@@ -2,14 +2,14 @@
 const cart = [];
 // boucle qui va récupérer chaque item dans le localStorage et populer le cart
 await getItemsFromLocalToCart();
-// recupération des items du catalogue
+// récupérer les datas Kanap depuis l'API
 const items = await getItemsFromApi();
-//  pour récupérer les datas Kanap depuis l'API
 async function getItemsFromApi() {
   return fetch(`http://localhost:3000/api/products/`).then((res) => res.json());
 }
-changeH1();
-function changeH1() {
+displayH1AndTitle();
+// affichage du titre de la page dans l'onglet et du h1, si le localstorage est vide ou contient des éléments
+function displayH1AndTitle() {
   let counter = verifLocalStorage();
   const h1 = document.getElementById("h1");
   const title = document.getElementById("title");
@@ -22,12 +22,12 @@ function changeH1() {
   }
 }
 
-//  le bouton commander
+//  récupération du bouton commander
 const orderButton = document.querySelector("#order");
 //  mise sur écoute du bouton commander
-orderButton.addEventListener("click", (e) => submitForm(e));
+orderButton.addEventListener("click", (e) => checksFormBeforeSend(e));
 
-// mettre tous les objets du local storage dans un tableau cart []
+// pousser tous les objets du local storage dans le tableau cart []
 async function getItemsFromLocalToCart() {
   const numberOfItems = localStorage.length;
   for (let i = 0; i < numberOfItems; i++) {
@@ -36,9 +36,9 @@ async function getItemsFromLocalToCart() {
     cart.push(itemObject);
   }
 }
-
+// on récupère chaque item du cart vers la fonction getInfosItem
 cart.forEach((item) => getInfosItem(item));
-
+// on récupère toutes informations de l'item nécessaires pour fabriquer l'article
 async function getInfosItem(item) {
   const imageUrl = getImgUrl(item.id);
   const altTxt = getAltTxt(item.id);
@@ -61,7 +61,7 @@ async function getInfosItem(item) {
   calcTotalArticle();
   calcTotalPrice(item);
 }
-
+// affichage de l'article dans la page panier
 function displayArticle(article) {
   document.querySelector("#cart__items").appendChild(article);
 }
@@ -102,28 +102,33 @@ function makeArticle(
   </div>`;
   return article;
 }
-
+// récupération dans le cart[] de l'url de l'image de l'item
 function getImgUrl(id) {
   const item = cart.find((element) => element.id === id);
   return item.imageUrl;
 }
+// récupération dans le cart[] du texte alternatif de l'image de l'item
 function getAltTxt(id) {
   const item = cart.find((element) => element.id === id);
   return item.altTxt;
 }
+// récupération dans le cart[] de la quantité de l'item
 function getUnitQuantity(id) {
   const item = cart.find((element) => element.id === id);
   return item.quantity;
 }
+// récupération dans le cart[] de la couleur de l'item
 function getColorProduct(id) {
   const item = cart.find((element) => element.id === id);
   return item.color;
 }
+// récupération dans le cart[] du prix unitaire de l'item
 function getUnitPrice(id) {
   // recup prix depuis les infos renvoyées par l'API
   const item = items.find((element) => element._id === id);
   return item.price;
 }
+// récupération dans le cart[] du nom de l'item
 function getNameProduct(id) {
   const item = cart.find((element) => element.id === id);
   return item.name;
@@ -136,7 +141,6 @@ function calcTotalArticle() {
     total += item.quantity;
   });
   displayTotalArticle(total);
-  console.log(total);
 }
 // affichage du nombre d'articles dans le panier
 function displayTotalArticle(total) {
@@ -155,6 +159,8 @@ function displayTotalArticle(total) {
 //     h1.innerHTML = "Votre Panier est vide";
 //   }
 // }
+
+// vérification si le localstorage est vide ou contient des éléments
 function verifLocalStorage() {
   return localStorage.length;
 }
@@ -177,17 +183,16 @@ function displayTotalPrice(total) {
   totalPrice.textContent = total;
 }
 
-//  mise à jour de la quantité de l'Item
+//  mise à jour dans le cart [] de la quantité de l'Item
 function updateItemsQuantity(newQuantity, color, _id) {
   const itemToUpdate = cart.find(
     (item) => (item.id === _id) & (item.color === color)
   );
-  console.log(itemToUpdate, newQuantity, color);
   itemToUpdate.quantity = Number(newQuantity);
   calcTotalArticle();
   calcTotalPrice();
   updateDataToLocalStorage(itemToUpdate);
-  changeH1();
+  displayH1AndTitle();
 }
 //  mise à jour du produit dans le localstorage
 function updateDataToLocalStorage(itemToUpdate) {
@@ -209,8 +214,6 @@ document.querySelectorAll(".deleteItem").forEach((suppressionButton) => {
   suppressionButton.addEventListener("click", (e) => {
     let color = e.target.closest(".cart__item").dataset.color;
     let _id = e.target.closest(".cart__item").dataset.id;
-    console.log(`Couleur : ${color}`);
-    console.log(`ID : ${_id}`);
     getIndexItemToDelete(color, _id);
   });
 });
@@ -220,10 +223,9 @@ function getIndexItemToDelete(color, _id) {
   const indexItemToDelete = cart.findIndex(
     (product) => product.id === _id && product.colorProduct === color
   );
-
   confirmationDeleteItem(indexItemToDelete, color, _id);
 }
-// boite de dialogue confirmation suppression de l'article du panier
+// boite de dialogue de confirmation pour la suppression de l'article du panier
 function confirmationDeleteItem(indexItemToDelete, color, _id) {
   if (
     confirm("Êtes-vous certain de vouloir supprimer cet article du panier?")
@@ -234,7 +236,7 @@ function confirmationDeleteItem(indexItemToDelete, color, _id) {
     deleteArticleFromPage(color, _id);
     calcTotalArticle();
     calcTotalPrice();
-    changeH1();
+    displayH1AndTitle();
   } else {
     alert("Annuler la suppression de cet article du panier.");
   }
@@ -249,12 +251,11 @@ function deleteArticleFromPage(color, _id) {
   const articleToDelete = document.querySelector(
     `article[data-id="${_id}"][data-color="${color}"]`
   );
-  console.log("deleting  article : ", articleToDelete);
   articleToDelete.remove();
 }
 
-// envoi du for
-function submitForm(e) {
+// vérification si le panier est vide et si les champs sont correctement renseignés selon les "regex"
+function checksFormBeforeSend(e) {
   // empêche le rafraichissement automatique de la page au clic
   e.preventDefault();
   if (
@@ -268,9 +269,6 @@ function submitForm(e) {
     return;
   } else {
     const body = makeRequestBody();
-    const urlPostApi = "http://localhost:3000/api/products/order";
-    postBodyToApi(body, urlPostApi);
-    console.log(body);
   }
 }
 
@@ -287,7 +285,7 @@ const addressRegExp = new RegExp(
 function isCartEmpty() {
   if (cart.length === 0) {
     alert(
-      "Le panier est vide merci d'ajouter au moins un article. Nous vous dirigeons vers la page d'accueil"
+      "Le panier est vide merci d'ajouter au moins un article. Nous vous redirigeons vers la page d'accueil"
     );
     redirectionHomePage();
     return true;
@@ -306,7 +304,7 @@ const form = document.querySelector(".cart__order__form");
 form.firstName.addEventListener("change", function () {
   validFirstName(this);
 });
-
+// vérification du champs prénom selon la regex
 function validFirstName(inputFirstName) {
   const firstNameErrorMsg = document.querySelector("#firstNameErrorMsg");
   if (charRegExp.test(inputFirstName.value)) {
@@ -322,7 +320,7 @@ function validFirstName(inputFirstName) {
 form.lastName.addEventListener("change", function () {
   validLastName(this);
 });
-
+// vérification du champs nom selon la regex
 function validLastName(inputLastName) {
   const lastNameErrorMsg = document.querySelector("#lastNameErrorMsg");
   if (charRegExp.test(inputLastName.value)) {
@@ -334,11 +332,11 @@ function validLastName(inputLastName) {
   }
 }
 
-// écouter le champs adress
+// écouter le champs adresse
 form.address.addEventListener("change", function () {
   validAdress(this);
 });
-
+// vérification du champs adress selon la regex
 function validAdress(inputAdress) {
   const addressErrorMsg = document.querySelector("#addressErrorMsg");
   if (addressRegExp.test(inputAdress.value)) {
@@ -350,12 +348,11 @@ function validAdress(inputAdress) {
   }
 }
 
-// écouteur sur le champs Ville
+// ecouteur sur le champs Ville
 form.city.addEventListener("change", function () {
-  console.log("modif city");
   validCity(this);
 });
-
+// verification du champs Ville selon la regex
 const validCity = function (inputCity) {
   const cityErrorMsg = document.querySelector("#cityErrorMsg");
   if (charRegExp.test(inputCity.value)) {
@@ -367,12 +364,11 @@ const validCity = function (inputCity) {
   }
 };
 
-// écouter les modications du champs email
+// ecouter les modications du champs email
 form.email.addEventListener("change", function () {
-  console.log("modif email");
   validEmail(this);
 });
-
+// verification du champs email selon la regex
 const validEmail = function (inputEmail) {
   const emailErrorMsg = document.querySelector("#emailErrorMsg");
   if (regexEmail.test(inputEmail.value)) {
@@ -396,7 +392,7 @@ const validEmail = function (inputEmail) {
 //   return charRegExp.test(firstName);
 // }
 
-// fabrication du bosy à envoyer à l'API
+// fabrication du body à envoyer à l'API
 function makeRequestBody() {
   const form = document.querySelector(".cart__order__form");
   const firstName = form.elements.firstName.value;
@@ -415,9 +411,10 @@ function makeRequestBody() {
     },
     products: getIdsFromcache(),
   };
-  return body;
+  const urlPostApi = "http://localhost:3000/api/products/order";
+  postBodyToApi(body, urlPostApi);
 }
-// recuperation of products in local storage for put in a array
+// recuperation des ids des produits dans la localstorage => tableau
 function getIdsFromcache() {
   const numbOfProducts = localStorage.length;
   const products = [];
@@ -430,7 +427,7 @@ function getIdsFromcache() {
   return products;
 }
 
-// post body to api
+// envoyer le body a l'API
 async function postBodyToApi(body, urlPostApi) {
   fetch(urlPostApi, {
     method: "POST",
@@ -447,7 +444,7 @@ async function postBodyToApi(body, urlPostApi) {
     .catch((error) => console.error(error));
 }
 
-// redirection to confirmation.html
+// redirection vers confirmation.html
 function redirectionConfirmationPage(orderId) {
   window.location.href = "confirmation.html" + "?orderId=" + orderId;
 }

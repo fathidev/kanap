@@ -5,7 +5,6 @@ const urlParams = new URLSearchParams(queryString);
 const id = urlParams.get("id");
 // pour pouvoir récupérer le prix et le stocker dans le local storage
 let canapePrice = 0;
-
 let imgUrlForStorage, altTxtForStorage, articleName;
 
 // requète à l'api en ciblant le produit à l'aide de l'ID
@@ -13,8 +12,8 @@ fetch(`http://localhost:3000/api/products/${id}`)
   .then((res) => res.json())
   .then((res) => getDatas(res));
 
+// on récupère les données du produit
 function getDatas(canape) {
-  // on récupère les données
   const altTxt = canape.altTxt;
   const colors = canape.colors;
   const description = canape.description;
@@ -48,7 +47,7 @@ function makeImage(imageUrl, altTxt) {
   const parent = document.querySelector(".item__img");
   if (parent != null) parent.appendChild(image);
 }
-// insertion du nom du produit dans le h1
+// insertion du nom du produit dans le h1 et le title
 function makeTitle(name) {
   const h1 = document.querySelector("#title");
   const title = document.querySelector("title");
@@ -88,8 +87,8 @@ function makeColors(colors) {
 const button = document.querySelector("#addToCart");
 button.addEventListener("click", addProduct);
 
+// vérification si le produit est déjà dans le localstorage et affectation quantité
 function addProduct() {
-  // récupère la couleur et la quantité
   const color = document.querySelector("#colors").value;
   const quantity = document.querySelector("#quantity").value;
 
@@ -100,7 +99,7 @@ function addProduct() {
   const quantityUpdated = isProductInCache(key)
     ? getNewQuantity(quantity, key)
     : quantity;
-    
+
   confirmationAddItemToCart(color, quantityUpdated, key);
 }
 
@@ -111,7 +110,6 @@ function confirmationAddItemToCart(color, quantityUpdated, key) {
     )
   ) {
     makeDataForLocalStorage(color, quantityUpdated, key);
-    // tout se passe bien on redirige le client vers la page récap du panier
   } else {
     alert(
       `Annulation de l'ajout au panier de ${articleName}, nous vous dirigeons vers la page d'accueil.`
@@ -119,19 +117,20 @@ function confirmationAddItemToCart(color, quantityUpdated, key) {
     window.location.href = "index.html";
   }
 }
-
+// vérification dans le localstorage si le produit est déjà présent sur la base de la key
 function isProductInCache(key) {
   return localStorage.getItem(key) != null;
 }
+// récupération de l'id du produit depuis la variable globale récupérée dans l'URL
 function getProductId() {
   return id;
 }
 
-//  function pour vérifier si la commande est invalide
+//  function pour vérifier si la couleur et la quantité ont bien été sélectionnées
 function isColorAndQuantityValid(color, quantity) {
   return color != "" && quantity != "0";
 }
-
+// affectation de la nouvelle quantité dans le cas où le produit est déjà présent dans le localstorage
 function getNewQuantity(quantity, key) {
   const existingProduct = localStorage.getItem(key);
   const product = JSON.parse(existingProduct);
@@ -140,10 +139,9 @@ function getNewQuantity(quantity, key) {
   return newQuantity;
 }
 
+// création d'un objet qui va contenir les infos du produit pour stockage dans le localstorage
 function makeDataForLocalStorage(color, quantity, key) {
-  // création d'un objet qui va contenir les infos de la commande
   const data = {
-    // id: id,
     id: getProductId(),
     color: color,
     // conversion de quantité de string à number pour les calculs à suivre
@@ -156,11 +154,10 @@ function makeDataForLocalStorage(color, quantity, key) {
   redirectionToCart();
 }
 
+// déclaration d'un élément dans local storage et pousser la data
 function pushProductInLocalStorage(data, key) {
-  // déclaration d'un local storage
   //  id c'est la clé de stockage et on fait un json des datas en string afin de les stocker dans le localstorage
   localStorage.setItem(key, JSON.stringify(data));
-  console.log({ key, data: JSON.stringify(data) });
 }
 
 // redirige le client vers la page récap du panier
