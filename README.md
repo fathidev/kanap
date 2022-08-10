@@ -1,4 +1,4 @@
-![GitHub followers](https://img.shields.io/github/followers/fathidev?style=social)
+![GitHub followers](https://img.shields.io/github/followers/fathidev?style=social) ![GitHub repo size](https://img.shields.io/github/repo-size/fathidev/kanap?style=social)
 
 # Kanap #
 
