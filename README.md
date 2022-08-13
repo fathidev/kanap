@@ -17,6 +17,6 @@ server runs on another port for any reason, this is printed to the
 console when the server starts, e.g. `Listening on port 3001`.
 
 
-### demo in video ###
+### Demo in video ###
 https://www.youtube.com/watch?v=bfKCSUojLBo
 
